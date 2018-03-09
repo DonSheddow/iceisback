@@ -1,0 +1,21 @@
+[[source]]
+
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+
+attrs = "==17.4.0"
+automat = "==0.6.0"
+constantly = "==15.1.0"
+hyperlink = "==18.0.0"
+idna = "==2.6"
+incremental = "==17.5.0"
+twisted = "*"
+"zope.interface" = "==4.4.3"
+
+
+[dev-packages]
+
