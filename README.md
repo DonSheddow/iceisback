@@ -11,11 +11,17 @@ sudo pip install pipenv
 ```
 
 Arch Linux:
-`sudo pacman -S python python-pip python-pipenv`
+```
+sudo pacman -S python python-pip python-pipenv
+```
 
 ### Build
-`pipenv install`
+```
+pipenv install
+```
 
 
 ## Running
-`pipenv run python main.py`
+```
+pipenv run python main.py
+```
