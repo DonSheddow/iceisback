@@ -1,3 +1,4 @@
+import argparse
 from datetime import datetime
 
 from twisted.internet import reactor, defer
@@ -74,14 +75,19 @@ class DynamicResolver(object):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", type=int, default=10053,
+                        help="TCP/UDP port to listen on")
+    args = parser.parse_args()
+
     factory = MyDNSServerFactory(
         clients=[DynamicResolver()]
     )
 
     protocol = dns.DNSDatagramProtocol(controller=factory)
 
-    reactor.listenUDP(10053, protocol)
-    reactor.listenTCP(10053, factory)
+    reactor.listenUDP(args.port, protocol)
+    reactor.listenTCP(args.port, factory)
 
     reactor.run()
 
