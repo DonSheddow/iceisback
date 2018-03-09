@@ -60,8 +60,7 @@ class DynamicResolver(object):
         answer = dns.RRHeader(
             name=name,
             payload=dns.Record_A(address=IP_RESPONSE))
-        answers = [answer]
-        return answers, [], []
+        return [answer], [], []
 
     def query(self, query, timeout=None):
         """
