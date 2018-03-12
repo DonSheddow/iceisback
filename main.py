@@ -54,12 +54,10 @@ class DynamicResolver(object):
         """
         name = query.name.name
         
-        msg = name[:-len(ROOT_DOMAIN)]
-
-        print("[{time}] {ip} {msg}".format(
+        print("[{time}] {ip} {domain}".format(
             time=datetime.now(),
             ip=self.peer_address[0],
-            msg=msg.decode('ascii')))
+            domain=name.decode('ascii')))
 
         answer = dns.RRHeader(
             name=name,
