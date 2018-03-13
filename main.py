@@ -1,8 +1,12 @@
 import argparse
+import json
 from datetime import datetime
 
+import pika
 from twisted.internet import reactor, defer
 from twisted.names import dns, error, server
+
+import config
 
 
 ROOT_DOMAIN = b'.n.sheddow.xyz'
@@ -31,8 +35,13 @@ class DynamicResolver(object):
     query type and name.
     """
 
-    def __init__(self):
+    def __init__(self, send_mail=False):
         self._peer_address = None
+        self.send_mail = send_mail
+        if send_mail:
+            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
+            self.mq_channel = connection.channel()
+            self.mq_channel.queue_declare(queue=config.QUEUE_NAME)
 
     @property
     def peer_address(self):
@@ -53,11 +62,23 @@ class DynamicResolver(object):
         Calculate the response to a query.
         """
         name = query.name.name
+
+        time = datetime.now()
+        ip = self.peer_address[0]
+        domain = name.decode('ascii')
         
-        print("[{time}] {ip} {domain}".format(
-            time=datetime.now(),
-            ip=self.peer_address[0],
-            domain=name.decode('ascii')))
+        print("[{time}] {ip} {domain}".format(time=time, ip=ip, domain=domain))
+
+        if self.send_mail:
+            subj = "Received DNS request from {ip}".format(ip=ip)
+            body = "{ip} tried to resolve {domain} at {time} server time".format(
+                ip=ip,
+                domain=domain,
+                time=time)
+            msg = {"subject": subj, "body": body}
+            self.mq_channel.basic_publish(exchange="",
+                                          routing_key=config.QUEUE_NAME,
+                                          body=json.dumps(msg))
 
         answer = dns.RRHeader(
             name=name,
@@ -79,10 +100,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--port", type=int, default=10053,
                         help="TCP/UDP port to listen on")
+    parser.add_argument("--send-mail", action="store_true",
+                        help="Send an email when receiving a DNS request. Requires RabbitMQ")
     args = parser.parse_args()
 
     factory = MyDNSServerFactory(
-        clients=[DynamicResolver()]
+        clients=[DynamicResolver(send_mail=args.send_mail)]
     )
 
     protocol = dns.DNSDatagramProtocol(controller=factory)
