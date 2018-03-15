@@ -4,4 +4,5 @@ MAILGUN_API_KEY = ""
 MAIL_FROM = ""
 MAIL_TO = ""
 
-QUEUE_NAME = "offthemails"
+ROOT_DOMAIN = b""
+IP_RESPONSE = b""

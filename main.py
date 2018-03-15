@@ -1,16 +1,13 @@
 import argparse
 import json
 from datetime import datetime
+from multiprocessing import Process, Queue
 
-import pika
 from twisted.internet import reactor, defer
 from twisted.names import dns, error, server
 
 import config
-
-
-ROOT_DOMAIN = b'.n.sheddow.xyz'
-IP_RESPONSE = b'127.0.0.1'
+from send_mail import mail_daemon
 
 
 class MyDNSServerFactory(server.DNSServerFactory):
@@ -39,9 +36,17 @@ class DynamicResolver(object):
         self._peer_address = None
         self.send_mail = send_mail
         if send_mail:
-            connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-            self.mq_channel = connection.channel()
-            self.mq_channel.queue_declare(queue=config.QUEUE_NAME)
+            self.mail_queue = q = Queue()
+            self.proc = Process(target=mail_daemon, args=(q,))
+            self.proc.start()
+
+    def _send_mail(self, subj, body):
+        msg = {"subject": subj, "body": body}
+
+        try:
+            self.mail_queue.put(msg, block=False)
+        except Queue.Full:
+            print("Unable to send email (queue is full)")
 
     @property
     def peer_address(self):
@@ -55,7 +60,7 @@ class DynamicResolver(object):
         """
         Check the query to determine if a dynamic response is required.
         """
-        return query.type == dns.A and query.name.name.endswith(ROOT_DOMAIN)
+        return query.type == dns.A and query.name.name.endswith(config.ROOT_DOMAIN)
 
     def _doDynamicResponse(self, query):
         """
@@ -71,18 +76,15 @@ class DynamicResolver(object):
 
         if self.send_mail:
             subj = "Received DNS request from {ip}".format(ip=ip)
-            body = "{ip} tried to resolve {domain} at {time} server time".format(
+            body = "{ip} tried to resolve {domain} at {time} server time".format(
                 ip=ip,
                 domain=domain,
                 time=time)
-            msg = {"subject": subj, "body": body}
-            self.mq_channel.basic_publish(exchange="",
-                                          routing_key=config.QUEUE_NAME,
-                                          body=json.dumps(msg))
+            self._send_mail(subj, body)
 
         answer = dns.RRHeader(
             name=name,
-            payload=dns.Record_A(address=IP_RESPONSE))
+            payload=dns.Record_A(address=config.IP_RESPONSE))
         return [answer], [], []
 
     def query(self, query, timeout=None):

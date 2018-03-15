@@ -15,7 +15,6 @@ idna = "==2.6"
 incremental = "==17.5.0"
 twisted = "*"
 "zope.interface" = "==4.4.3"
-pika = "*"
 requests = "*"
 
 
