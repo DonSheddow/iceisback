@@ -1,5 +1,6 @@
 import argparse
 import json
+import queue
 from datetime import datetime
 from multiprocessing import Process, Queue
 
@@ -40,12 +41,12 @@ class DynamicResolver(object):
             self.proc = Process(target=mail_daemon, args=(q,))
             self.proc.start()
 
-    def _send_mail(self, subj, body):
-        msg = {"subject": subj, "body": body}
+    def _send_mail(self, ip, domain, time):
+        msg = {"ip": ip, "domain": domain, "time": time}
 
         try:
             self.mail_queue.put(msg, block=False)
-        except Queue.Full:
+        except queue.Full:
             print("Unable to send email (queue is full)")
 
     @property
@@ -75,12 +76,7 @@ class DynamicResolver(object):
         print("[{time}] {ip} {domain}".format(time=time, ip=ip, domain=domain))
 
         if self.send_mail:
-            subj = "Received DNS request from {ip}".format(ip=ip)
-            body = "{ip} tried to resolve {domain} at {time} server time".format(
-                ip=ip,
-                domain=domain,
-                time=time)
-            self._send_mail(subj, body)
+            self._send_mail(ip, domain, time)
 
         answer = dns.RRHeader(
             name=name,

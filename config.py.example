@@ -3,6 +3,8 @@ MAILGUN_API_KEY = ""
 
 MAIL_FROM = ""
 MAIL_TO = ""
+# Send mail at most once every 120 seconds
+MAIL_RATELIMIT = 120
 
 ROOT_DOMAIN = b""
 IP_RESPONSE = b""
