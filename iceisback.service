@@ -1,0 +1,9 @@
+[Unit]
+Description=Iceisback DNS server
+
+[Service]
+WorkingDirectory=/opt/iceisback
+ExecStart=/bin/bash -c "/usr/bin/pipenv install && /usr/bin/pipenv run python main.py --send-mail"
+
+[Install]
+WantedBy=multi-user.target
