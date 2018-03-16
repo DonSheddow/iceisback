@@ -8,12 +8,17 @@ def send_mail(subject, body):
              "subject": subject,
              "text": body}
 
-    return requests.post(
+    r = requests.post(
         config.MAILGUN_API_URL,
         auth=auth,
         data=data)
+    r.raise_for_status()
+    return r
 
 def mail_daemon(queue):
     while True:
-        msg = queue.get()
-        send_mail(msg['subject'], msg['body'])
+        try:
+            msg = queue.get()
+            send_mail(msg['subject'], msg['body'])
+        except Exception as e:
+            print("Unable to send email: ", e)
