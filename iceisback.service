@@ -3,7 +3,7 @@ Description=Iceisback DNS server
 
 [Service]
 WorkingDirectory=/opt/iceisback
-ExecStart=/bin/bash -c "/usr/bin/env pipenv install && /usr/bin/env pipenv run python main.py --send-mail"
+ExecStart=/bin/bash -c "/usr/bin/env pipenv install && /usr/bin/env pipenv run python main.py --send-mail --port 53"
 
 [Install]
 WantedBy=multi-user.target
