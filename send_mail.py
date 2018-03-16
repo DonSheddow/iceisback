@@ -1,3 +1,4 @@
+import sys
 from datetime import datetime
 from queue import Empty
 import requests
@@ -51,4 +52,4 @@ def mail_daemon(queue):
             send_mail(subject, body)
             last_mail = datetime.now()
         except Exception as e:
-            print("Unable to send email: ", e)
+            print("Unable to send email: ", e, flush=True, file=sys.stderr)

@@ -73,7 +73,7 @@ class DynamicResolver(object):
         ip = self.peer_address[0]
         domain = name.decode('ascii')
         
-        print("[{time}] {ip} {domain}".format(time=time, ip=ip, domain=domain))
+        print("[{time}] {ip} {domain}".format(time=time, ip=ip, domain=domain), flush=True)
 
         if self.send_mail:
             self._send_mail(ip, domain, time)
