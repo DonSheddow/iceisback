@@ -25,6 +25,8 @@ def mail_daemon(queue):
         try:
             msg = queue.get(timeout=1)
             accumulated_mail.append(msg)
+            msg = queue.get(timeout=1)
+            accumulated_mail.append(msg)
         except Empty:
             pass
 
