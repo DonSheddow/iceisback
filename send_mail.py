@@ -1,4 +1,5 @@
 import sys
+import time
 from datetime import datetime
 from queue import Empty
 import requests
@@ -18,6 +19,15 @@ def send_mail(subject, body):
     r.raise_for_status()
     return r
 
+def empty_queue(queue):
+    result = []
+    try:
+        while True:
+            result.append(queue.get(block=False))
+    except Empty:
+        pass
+    return result
+
 def mail_daemon(queue):
     accumulated_mail = []
     last_mail = datetime.min
@@ -25,8 +35,9 @@ def mail_daemon(queue):
         try:
             msg = queue.get(timeout=1)
             accumulated_mail.append(msg)
-            msg = queue.get(timeout=1)
-            accumulated_mail.append(msg)
+
+            time.sleep(1)
+            accumulated_mail.extend(empty_queue(queue))
         except Empty:
             pass
 
