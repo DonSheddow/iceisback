@@ -99,7 +99,7 @@ def main():
     parser.add_argument("-p", "--port", type=int, default=10053,
                         help="TCP/UDP port to listen on")
     parser.add_argument("--send-mail", action="store_true",
-                        help="Send an email when receiving a DNS request. Requires RabbitMQ")
+                        help="Send an email when receiving a DNS request")
     args = parser.parse_args()
 
     factory = MyDNSServerFactory(
